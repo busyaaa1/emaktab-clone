@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eMaktab Ultra Pro Max 🚀</title>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg-body: #F0F2F5;
+            --bg-glass-card: rgba(255, 255, 255, 0.4);
+            --bg-glass-modal: rgba(255, 255, 255, 0.7);
+            --text-main: #34495e;
+            --pink-primary: #FF69B4;
+            --pink-dark: #C71585;
+            --border-glass: rgba(255, 255, 255, 0.6);
+            --shadow-glass: rgba(0, 0, 0, 0.1);
+            --wave-color: #FFD1DC;
+            --input-bg: rgba(255, 255, 255, 0.9);
+            --input-text: #1a2a3a;
+        }
+
+        [data-theme="dark"] {
+            --bg-body: #0F172A;
+            --bg-glass-card: rgba(30, 41, 59, 0.6);
+            --bg-glass-modal: rgba(15, 23, 42, 0.9);
+            --text-main: #F1F5F9;
+            --pink-primary: #FB7185;
+            --pink-dark: #E11D48;
+            --border-glass: rgba(255, 255, 255, 0.1);
+            --shadow-glass: rgba(0, 0, 0, 0.4);
+            --wave-color: #312E81;
+            /* В темной теме поля ввода оставляем светлыми для читаемости */
+            --input-bg: #ffffff;
+            --input-text: #1a2a3a;
+        }
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0; padding: 20px;
+            transition: all 0.5s ease;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- Анимации Фона --- */
+        #stars-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -2; pointer-events: none; }
+        .star { position: absolute; background: white; border-radius: 50%; opacity: 0.5; animation: twinkle var(--d) infinite; }
+        @keyframes twinkle { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 1; transform: scale(1.3); } }
+
+        .wave-bg { position: fixed; bottom: 0; left: 0; width: 100%; height: 200px; z-index: -1; opacity: 0.5; pointer-events: none; }
+
+        /* --- Навигация --- */
+        .nav-bar {
+            display: flex; gap: 15px; margin-bottom: 25px;
+            justify-content: center; animation: fadeInDown 0.8s ease;
+        }
+        .nav-btn {
+            background: var(--bg-glass-card); border: 1px solid var(--border-glass);
+            color: var(--text-main); padding: 12px 25px; border-radius: 15px;
+            cursor: pointer; backdrop-filter: blur(10px); transition: 0.3s;
+            font-weight: 600;
+        }
+        .nav-btn.active { background: var(--pink-primary); color: white; box-shadow: 0 0 20px var(--pink-primary); }
+
+        /* --- Основной Контейнер --- */
+        .container { max-width: 1000px; margin: 0 auto; position: relative; }
+
+        header {
+            background: var(--bg-glass-card); backdrop-filter: blur(20px);
+            padding: 25px; border-radius: 25px; border: 1px solid var(--border-glass);
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; box-shadow: 0 10px 30px var(--shadow-glass);
+        }
+
+        .page { display: none; animation: slideIn 0.5s ease forwards; }
+        .page.active { display: block; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- Карточки статистики --- */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .stat-card {
+            background: var(--bg-glass-card); padding: 30px; border-radius: 25px;
+            text-align: center; border: 1px solid var(--border-glass); backdrop-filter: blur(15px);
+        }
+        .stat-number { font-size: 3em; font-weight: 800; color: var(--pink-primary); display: block; }
+
+        /* --- Таблица --- */
+        table { width: 100%; border-spacing: 0 10px; border-collapse: separate; }
+        tr.grade-row { background: var(--bg-glass-card); backdrop-filter: blur(10px); transition: 0.3s; }
+        tr.grade-row:hover { transform: scale(1.02); background: rgba(255,255,255,0.1); }
+        td, th { padding: 20px; text-align: left; }
+        td:first-child { border-radius: 20px 0 0 20px; }
+        td:last-child { border-radius: 0 20px 20px 0; }
+
+        .mark-badge {
+            width: 45px; height: 45px; background: var(--pink-primary); color: white;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 12px; font-weight: bold; font-size: 1.2em;
+        }
+
+        /* --- Кнопки и Модалка --- */
+        .btn {
+            background: var(--pink-primary); color: white; border: none;
+            padding: 12px 20px; border-radius: 12px; cursor: pointer; font-weight: 600;
+        }
+        #modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(15px);
+            justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-content {
+            background: var(--bg-glass-modal); padding: 40px; border-radius: 30px;
+            width: 400px; border: 1px solid var(--border-glass);
+        }
+
+        /* ИСПРАВЛЕНИЕ: Стили для полей ввода (всегда темный текст) */
+        input, select, textarea {
+            width: 100%; margin: 10px 0; padding: 15px; border-radius: 12px;
+            border: 1px solid rgba(0,0,0,0.1); 
+            background: var(--input-bg) !important;
+            color: var(--input-text) !important; 
+            font-size: 16px;
+            font-family: inherit;
+        }
+        
+        /* Принудительный цвет для выпадающего списка */
+        select option {
+            background-color: #ffffff !important;
+            color: #1a2a3a !important;
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body data-theme="light">
+
+<div id="stars-container"></div>
+<svg class="wave-bg" viewBox="0 0 1440 320"><path id="wavePath" fill="var(--wave-color)" d="M0,192L48,197.3C96,203,192,213,288,192C384,171,480,117,576,112C672,107,768,149,864,154.7C960,160,1056,128,1152,112C1248,96,1344,96,1392,96L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>
+
+<div class="container">
+    <nav class="nav-bar">
+        <button class="nav-btn active" onclick="showPage('home')">🏠 Главная</button>
+        <button class="nav-btn" onclick="showPage('journal')">📚 Журнал</button>
+        <button class="nav-btn" onclick="showPage('stats')">📊 Аналитика</button>
+    </nav>
+
+    <header>
+        <h1 style="margin:0">eMaktab Space</h1>
+        <div style="display:flex; gap:10px;">
+            <button class="nav-btn" style="padding:10px" onclick="toggleTheme()" id="themeIcon">🌙</button>
+            <button class="btn" onclick="openModal()">+ Оценка</button>
+        </div>
+    </header>
+
+    <div id="page-home" class="page active">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Всего оценок</h3>
+                <span id="stat-total" class="stat-number">0</span>
+            </div>
+            <div class="stat-card">
+                <h3>Средний балл</h3>
+                <span id="stat-avg" class="stat-number">0.0</span>
+            </div>
+            <div class="stat-card">
+                <h3>Система</h3>
+                <span class="stat-number">10</span>
+                <p>десятибалльная</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-journal" class="page">
+        <table id="gradesTable">
+            <thead>
+                <tr>
+                    <th>Ученик</th>
+                    <th>Предмет</th>
+                    <th>Балл</th>
+                    <th>Дата</th>
+                    <th>Действие</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div id="page-stats" class="page">
+        <div class="stat-card">
+            <h2>Успеваемость по предметам</h2>
+            <p>Здесь отображается ваша активность во вселенной знаний.</p>
+            <div id="subject-list" style="text-align: left; margin-top:20px;"></div>
+        </div>
+    </div>
+</div>
+
+<div id="modal">
+    <div class="modal-content">
+        <h2 id="modalTitle" style="color:#1a2a3a; margin-top:0;">Новая запись</h2>
+        <input type="hidden" id="editId">
+        <input type="text" id="studentName" placeholder="Имя ученика">
+        <select id="subject">
+            <option value="" disabled selected>Выберите предмет</option>
+            <option value="Математика">Математика</option>
+            <option value="Физика">Физика</option>
+            <option value="Русский язык">Русский язык</option>
+            <option value="Информатика">Информатика</option>
+            <option value="История">История</option>
+            <option value="Английский">Английский</option>
+        </select>
+        <input type="number" id="mark" min="1" max="10" placeholder="Оценка (1-10)">
+        <textarea id="comment" placeholder="Комментарий" rows="2"></textarea>
+        <button class="btn" style="width:100%" onclick="handleSave()">Сохранить</button>
+        <button onclick="closeModal()" style="width:100%; background:none; border:none; color:#7f8c8d; cursor:pointer; margin-top:15px;">Отмена</button>
+    </div>
+</div>
+
+<script>
+    const SB_URL = 'https://fjhoiaboaozetmzzdbjg.supabase.co';
+    const SB_KEY = 'sb_publishable_eJJcBHyRDDklrFjpeDIMOA_wHjfdFim';
+    const _supabase = supabase.createClient(SB_URL, SB_KEY);
+
+    function showPage(pageId) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        
+        document.getElementById('page-' + pageId).classList.add('active');
+        // Обновляем активную кнопку
+        const buttons = document.querySelectorAll('.nav-btn');
+        buttons.forEach(btn => {
+            if(btn.innerText.toLowerCase().includes(pageId === 'home' ? 'главная' : pageId === 'journal' ? 'журнал' : 'аналитика')) {
+                btn.classList.add('active');
+            }
+        });
+        
+        if(pageId === 'home' || pageId === 'stats') updateStats();
+    }
+
+    function toggleTheme() {
+        const body = document.body;
+        const isDark = body.getAttribute('data-theme') === 'dark';
+        body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+        document.getElementById('themeIcon').innerText = isDark ? '🌙' : '☀️';
+    }
+
+    async function fetchGrades() {
+        const { data, error } = await _supabase.from('grades').select('*').order('date', { ascending: false });
+        if (error) return;
+
+        const tbody = document.querySelector('#gradesTable tbody');
+        tbody.innerHTML = '';
+        data.forEach(g => {
+            tbody.innerHTML += `
+                <tr class="grade-row">
+                    <td><b>${g.student}</b><br><small style="opacity:0.6">${g.comment || ''}</small></td>
+                    <td>${g.subject}</td>
+                    <td><div class="mark-badge">${g.mark}</div></td>
+                    <td>${new Date(g.date).toLocaleDateString()}</td>
+                    <td>
+                        <button class="btn" style="background:#42A5F5; padding:5px 10px; margin-right:5px" onclick="editGrade('${g.id}','${g.student}','${g.subject}',${g.mark},'${g.comment||''}')">✎</button>
+                        <button class="btn" style="background:#EF5350; padding:5px 10px" onclick="deleteGrade('${g.id}')">✕</button>
+                    </td>
+                </tr>`;
+        });
+        updateStats();
+    }
+
+    async function updateStats() {
+        const { data } = await _supabase.from('grades').select('mark, subject');
+        if (!data) return;
+
+        document.getElementById('stat-total').innerText = data.length;
+        const avg = data.length > 0 ? (data.reduce((s, c) => s + c.mark, 0) / data.length).toFixed(1) : 0;
+        document.getElementById('stat-avg').innerText = avg;
+
+        const subjList = document.getElementById('subject-list');
+        subjList.innerHTML = '';
+        const counts = {};
+        data.forEach(g => counts[g.subject] = (counts[g.subject] || 0) + 1);
+        for(let s in counts) {
+            subjList.innerHTML += `<p style="background:rgba(255,255,255,0.1); padding:10px; border-radius:10px;"><b>${s}</b>: ${counts[s]} оценок</p>`;
+        }
+    }
+
+    async function handleSave() {
+        const id = document.getElementById('editId').value;
+        const payload = {
+            student: document.getElementById('studentName').value,
+            subject: document.getElementById('subject').value,
+            mark: parseInt(document.getElementById('mark').value),
+            comment: document.getElementById('comment').value,
+            date: new Date()
+        };
+
+        if(!payload.student || !payload.mark || !payload.subject) return alert("Заполни все поля, включая выбор предмета!");
+
+        let res;
+        if (id) res = await _supabase.from('grades').update(payload).eq('id', id);
+        else res = await _supabase.from('grades').insert([payload]);
+
+        if(!res.error) { closeModal(); fetchGrades(); }
+        else alert("Ошибка: " + res.error.message);
+    }
+
+    async function deleteGrade(id) {
+        if(confirm("Удалить эту запись?")) {
+            await _supabase.from('grades').delete().eq('id', id);
+            fetchGrades();
+        }
+    }
+
+    function editGrade(id, name, subj, mark, comm) {
+        document.getElementById('editId').value = id;
+        document.getElementById('studentName').value = name;
+        document.getElementById('subject').value = subj;
+        document.getElementById('mark').value = mark;
+        document.getElementById('comment').value = comm;
+        document.getElementById('modalTitle').innerText = "Редактировать";
+        openModal();
+    }
+
+    function openModal() { document.getElementById('modal').style.display = 'flex'; }
+    function closeModal() { 
+        document.getElementById('modal').style.display = 'none';
+        document.getElementById('editId').value = '';
+        document.getElementById('studentName').value = '';
+        document.getElementById('subject').value = '';
+        document.getElementById('mark').value = '';
+        document.getElementById('comment').value = '';
+        document.getElementById('modalTitle').innerText = "Новая запись";
+    }
+
+    function createStars() {
+        const container = document.getElementById('stars-container');
+        for (let i = 0; i < 100; i++) {
+            const s = document.createElement('div');
+            s.className = 'star';
+            s.style.width = s.style.height = Math.random() * 3 + 'px';
+            s.style.left = Math.random() * 100 + '%';
+            s.style.top = Math.random() * 100 + '%';
+            s.style.setProperty('--d', Math.random() * 3 + 2 + 's');
+            container.appendChild(s);
+        }
+    }
+
+    window.onload = () => { createStars(); fetchGrades(); };
+</script>
+</body>
+</html>
