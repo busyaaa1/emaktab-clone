@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -95,7 +95,7 @@
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
 
-        /* Table Design */
+        /* Table Design & Hover */
         .glass-panel {
             background: var(--glass); backdrop-filter: blur(30px);
             border: 1px solid var(--border); border-radius: 40px; padding: 25px;
@@ -103,8 +103,16 @@
         }
         table { width: 100%; border-collapse: separate; border-spacing: 0 12px; }
         tr.grade-row td { background: rgba(255,255,255,0.03); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-        tr.grade-row:hover td { background: rgba(255,255,255,0.08); transform: scale(1.005); border-color: var(--accent); }
-        td { padding: 22px; transition: 0.3s; }
+        
+        /* Возвращаем Hover эффект для строк */
+        tr.grade-row:hover td { 
+            background: rgba(255,255,255,0.08); 
+            transform: scale(1.01) translateY(-2px); 
+            border-color: var(--accent); 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        td { padding: 22px; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         td:first-child { border-left: 1px solid var(--border); border-radius: 25px 0 0 25px; padding-left: 35px; }
         td:last-child { border-right: 1px solid var(--border); border-radius: 0 25px 25px 0; }
 
@@ -121,7 +129,7 @@
             cursor: pointer; box-shadow: 0 10px 30px var(--card-glow);
             text-transform: uppercase; letter-spacing: 1.5px; font-size: 0.8rem;
         }
-        .btn:hover { background: #fff; transform: scale(1.05); }
+        .btn:hover { background: #fff; transform: scale(1.05) translateY(-2px); }
         
         input, textarea {
             background: rgba(0,0,0,0.05) !important;
@@ -130,7 +138,7 @@
             width: 100%; outline: none;
         }
 
-        /* ПРАВКА ДЛЯ SELECT: Белый фон и черный текст */
+        /* ПРАВКА ДЛЯ SELECT: Белый фон и черный текст всегда */
         select#subject {
             background: #ffffff !important;
             color: #000000 !important;
@@ -141,7 +149,7 @@
             font-family: inherit;
             font-weight: 600;
             outline: none;
-            appearance: none; /* Убираем стандартную стрелку */
+            appearance: none;
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
             background-repeat: no-repeat;
             background-position: right 20px center;
@@ -246,11 +254,33 @@
             <input type="text" id="studentName" placeholder="IDENTIFIER NAME">
             
             <select id="subject">
-                <option value="" disabled selected style="color: gray;">CHOOSE SECTOR</option>
-                <option value="Математика">MATHEMATICS</option>
-                <option value="Физика">PHYSICS</option>
-                <option value="Информатика">CYBERNETICS</option>
-                <option value="Английский">LINGUISTICS</option>
+                <option value="" disabled selected>CHOOSE SECTOR</option>
+                <optgroup label="Core Sciences">
+                    <option value="Mathematics">MATHEMATICS</option>
+                    <option value="Algebra">ALGEBRA</option>
+                    <option value="Geometry">GEOMETRY</option>
+                    <option value="Physics">PHYSICS</option>
+                    <option value="Chemistry">CHEMISTRY</option>
+                    <option value="Biology">BIOLOGY</option>
+                </optgroup>
+                <optgroup label="Technology">
+                    <option value="Cybernetics">CYBERNETICS (IT)</option>
+                    <option value="Programming">PROGRAMMING</option>
+                    <option value="Robotics">ROBOTICS</option>
+                </optgroup>
+                <optgroup label="Linguistics">
+                    <option value="English">ENGLISH LANGUAGE</option>
+                    <option value="Russian">RUSSIAN LANGUAGE</option>
+                    <option value="Literature">LITERATURE</option>
+                    <option value="German">GERMAN</option>
+                </optgroup>
+                <optgroup label="Social & Other">
+                    <option value="History">WORLD HISTORY</option>
+                    <option value="Geography">GEOGRAPHY</option>
+                    <option value="Philosophy">PHILOSOPHY</option>
+                    <option value="Physical Culture">PHYSICAL CULTURE</option>
+                    <option value="Art">VISUAL ARTS</option>
+                </optgroup>
             </select>
             
             <input type="number" id="mark" min="1" max="10" placeholder="VALUE (1-10)">
@@ -262,11 +292,10 @@
 </div>
 
 <script>
-    const SB_URL = 'https://fjhoiaboaozetmzzdbjg.supabase.co';
+        const SB_URL = 'https://fjhoiaboaozetmzzdbjg.supabase.co';
     const SB_KEY = 'sb_publishable_eJJcBHyRDDklrFjpeDIMOA_wHjfdFim';
     const _supabase = supabase.createClient(SB_URL, SB_KEY);
 
-    // --- THREE.JS ---
     function init3D(containerId, color) {
         const container = document.querySelector(`${containerId} .canvas-container`);
         const scene = new THREE.Scene();
@@ -295,12 +324,11 @@
         animate();
     }
 
-    // --- CORE LOGIC ---
     function showPage(pageId) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('page-' + pageId).classList.add('active');
-        event.currentTarget.classList.add('active');
+        if (event) event.currentTarget.classList.add('active');
         if(pageId !== 'journal') updateStats();
     }
 
@@ -340,7 +368,7 @@
             comment: document.getElementById('comment').value,
             date: new Date()
         };
-        if(!payload.student || !payload.mark) return alert("CRITICAL ERROR: Data Missing!");
+        if(!payload.student || !payload.mark || !payload.subject) return alert("CRITICAL ERROR: Data Missing!");
         
         const res = id ? await _supabase.from('grades').update(payload).eq('id', id) : await _supabase.from('grades').insert([payload]);
         if(!res.error) { closeModal(); fetchGrades(); }
