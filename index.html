@@ -178,6 +178,105 @@
         .page.active { display: block; }
 
         @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+
+
+
+
+
+        /* изменения!!! */
+
+
+        /* Адаптивность для мобилок */
+@media (max-width: 768px) {
+    body { padding: 10px; }
+
+    /* Навигация: делаем кнопки компактнее или в ряд с прокруткой */
+    .nav-bar {
+        gap: 8px;
+        padding: 5px;
+        overflow-x: auto;
+        justify-content: flex-start;
+        -webkit-overflow-scrolling: touch;
+        white-space: nowrap;
+    }
+    .nav-btn {
+        padding: 10px 18px;
+        font-size: 0.75rem;
+    }
+
+    /* Шапка: перенос элементов */
+    .header-card {
+        padding: 15px 20px;
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+        border-radius: 25px;
+    }
+
+    /* Карточки статистики: в одну колонку */
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    .stat-card {
+        min-height: 200px;
+    }
+    .stat-number {
+        font-size: 4rem;
+    }
+
+    /* ТАБЛИЦА -> КАРТОЧКИ (Самое важное для мобилок) */
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+    thead { display: none; } /* Скрываем заголовки таблицы */
+
+    tr.grade-row {
+        margin-bottom: 15px;
+        border-radius: 25px;
+        background: var(--glass);
+        padding: 15px;
+        border: 1px solid var(--border);
+    }
+
+    td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0 !important;
+        border: none !important;
+        width: 100%;
+    }
+
+    td:first-child { 
+        flex-direction: column; 
+        align-items: flex-start; 
+        gap: 5px; 
+    }
+    
+    /* Добавляем подписи к данным через псевдоэлементы, если нужно */
+    td:nth-of-type(3):before { content: "Оценка:"; font-weight: 500; opacity: 0.6; }
+    td:nth-of-type(4):before { content: "Дата:"; font-weight: 500; opacity: 0.6; }
+
+    .mark-badge {
+        width: 45px;
+        height: 45px;
+        font-size: 1.2rem;
+    }
+
+    /* Модальное окно на весь экран для удобства ввода */
+    .modal-content {
+        padding: 25px;
+        margin: 10px;
+        border-radius: 30px;
+    }
+}
+
+/* Фикс для очень маленьких экранов (iPhone SE) */
+@media (max-width: 380px) {
+    .header-card h1 { font-size: 24px; }
+    .nav-btn { padding: 8px 12px; }
+}
     </style>
 </head>
 <body data-theme="dark">
@@ -438,4 +537,3 @@
 </script>
 </body>
 </html>
-
